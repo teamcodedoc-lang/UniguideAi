@@ -43,7 +43,14 @@ const collegeSchema = new mongoose.Schema({
     averagePackage: { type: String },
     highestPackage: { type: String },
     placementLink: { type: String },
-    placementDescription: { type: String }
+    placementDescription: { type: String },
+
+    // Accessibility & PwD Support
+    wheelchairAccess: { type: Boolean, default: true },
+    hostelAccess: { type: Boolean, default: true },
+    transportSupport: { type: Boolean, default: false },
+    medicalFacility: { type: Boolean, default: true },
+    accessibilityScore: { type: Number, default: 75 } // 1-100 score
 });
 
 // Compound index for prediction queries

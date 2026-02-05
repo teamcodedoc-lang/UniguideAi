@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const College = require('../models/College');
+const Review = require('../models/Review');
+
 
 // Get Filters (Districts, Branches, Categories)
 router.get('/filters', async (req, res) => {
@@ -41,12 +43,36 @@ router.get('/colleges', async (req, res) => {
     }
 });
 
-// Get Single College Details
-router.get('/college/:code', async (req, res) => {
+// Get Single College Details (supports both _id and code)
+router.get('/college/:id', async (req, res) => {
     try {
-        const college = await College.findOne({ code: req.params.code });
+        let college;
+        const mongoose = require('mongoose');
+
+        // Check if id is a valid MongoDB ObjectId
+        if (mongoose.isValidObjectId(req.params.id)) {
+            college = await College.findById(req.params.id);
+        }
+
+        // If not found by ID or not a valid ID (likely a college code), try by code
+        if (!college) {
+            college = await College.findOne({ code: req.params.id });
+        }
+
         if (!college) return res.status(404).json({ msg: 'College not found' });
         res.json(college);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// Get all branches for a specific college code
+router.get('/college_branches/:code', async (req, res) => {
+    try {
+        const branches = await College.distinct('branch', { code: req.params.code });
+        branches.sort();
+        res.json(branches);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server Error' });
@@ -57,7 +83,7 @@ router.get('/college/:code', async (req, res) => {
 router.post('/predict', async (req, res) => {
     console.log("[API] /predict called with body:", req.body);
     // 1. Normalize parameters (Frontend sends 'district', we use 'preferredDistrict')
-    let { cutoff, category, preferredBranch, preferredDistrict, district } = req.body;
+    let { cutoff, category, preferredBranch, preferredDistrict, district, isPwD, disabilityPercentage } = req.body;
 
     // Fallback: if preferredDistrict is empty but district is sent
     if (!preferredDistrict && district) {
@@ -70,9 +96,16 @@ router.post('/predict', async (req, res) => {
     }
 
     try {
+        let cutoffSearchLimit = parseFloat(cutoff);
+
+        // PwD Advantage: They can get into colleges with much higher community cutoffs
+        if (isPwD && parseInt(disabilityPercentage) >= 40) {
+            cutoffSearchLimit += 40;
+        }
+
         const query = {
             category: category,
-            cutoff: { $lte: parseFloat(cutoff) } // Ensure cutoff is a number
+            cutoff: { $lte: cutoffSearchLimit }
         };
         console.log("[API] Base Query:", JSON.stringify(query));
 
@@ -205,5 +238,43 @@ router.post('/predict', async (req, res) => {
         res.status(500).json({ error: 'Prediction Error' });
     }
 });
+
+// @route   POST api/reviews
+// @desc    Add a review
+router.post('/reviews', async (req, res) => {
+    try {
+        const { collegeCode, user, rating, comment } = req.body;
+
+        if (!collegeCode || !user || !rating || !comment) {
+            return res.status(400).json({ msg: 'Please enter all fields' });
+        }
+
+        const newReview = new Review({
+            collegeCode,
+            user,
+            rating: parseInt(rating),
+            comment
+        });
+
+        const review = await newReview.save();
+        res.json(review);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// @route   GET api/reviews/:collegeCode
+// @desc    Get reviews for a college
+router.get('/reviews/:collegeCode', async (req, res) => {
+    try {
+        const reviews = await Review.find({ collegeCode: req.params.collegeCode }).sort({ date: -1 });
+        res.json(reviews);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
 
 module.exports = router;

@@ -3,7 +3,8 @@ import { useLocation, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ResultCard from '../components/ResultCard';
 import Footer from '../components/Footer';
-import { ArrowLeft, Loader2, Frown, Sparkles, Search } from 'lucide-react';
+import CustomDropdown from '../components/CustomDropdown';
+import { ArrowLeft, Loader2, Frown, Sparkles, Search, Filter } from 'lucide-react';
 
 const Results = () => {
     const location = useLocation();
@@ -24,18 +25,45 @@ const Results = () => {
     const [error, setError] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
+    const [branchFilter, setBranchFilter] = useState("All Branches");
+    const [districtFilter, setDistrictFilter] = useState("All Districts");
 
-    // Filter colleges based on search query
+    // Dynamic Filter Options based on current result set
+    const { availableBranches, availableDistricts } = useMemo(() => {
+        const branches = new Set();
+        const districts = new Set();
+        colleges.forEach(c => {
+            if (c.branch) branches.add(c.branch);
+            if (c.district) districts.add(c.district);
+        });
+        return {
+            availableBranches: ["All Branches", ...Array.from(branches).sort()],
+            availableDistricts: ["All Districts", ...Array.from(districts).sort()]
+        };
+    }, [colleges]);
+
+    // Filter colleges based on search query and dropdowns
     const filteredColleges = useMemo(() => {
-        if (!searchQuery) return colleges;
+        let results = colleges;
+
+        // Apply Dropdown Filters
+        if (branchFilter !== "All Branches") {
+            results = results.filter(c => c.branch === branchFilter);
+        }
+        if (districtFilter !== "All Districts") {
+            results = results.filter(c => c.district === districtFilter);
+        }
+
+        // Apply Search Query
+        if (!searchQuery) return results;
         const query = searchQuery.toLowerCase();
-        return colleges.filter(college =>
+        return results.filter(college =>
             (college.name && college.name.toLowerCase().includes(query)) ||
             (college.code && String(college.code).includes(query)) ||
             (college.branch && college.branch.toLowerCase().includes(query)) ||
             (college.district && college.district.toLowerCase().includes(query))
         );
-    }, [colleges, searchQuery]);
+    }, [colleges, searchQuery, branchFilter, districtFilter]);
 
     // Helper to determine if we have valid data to run a search/browse
     const isValidRequest = (mode === 'browse' && tier) || (formData && formData.cutoff);
@@ -142,7 +170,7 @@ const Results = () => {
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
             <Navbar />
 
-            <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+            <main id="main-content" className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
                 {/* Search Summary Header */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg shadow-sm mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -215,18 +243,41 @@ const Results = () => {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {/* Search Bar */}
-                        <div className="mb-6 relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-slate-400" />
+                        {/* Filter & Search Section */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                                <div className="md:col-span-4">
+                                    <CustomDropdown
+                                        label="Specific Branch"
+                                        value={branchFilter}
+                                        options={availableBranches}
+                                        onChange={(e) => setBranchFilter(e.target.value)}
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <CustomDropdown
+                                        label="District"
+                                        value={districtFilter}
+                                        options={availableDistricts}
+                                        onChange={(e) => setDistrictFilter(e.target.value)}
+                                    />
+                                </div>
+                                <div className="md:col-span-5 relative">
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 invisible md:visible">Search</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Search className="h-4 w-4 text-slate-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            className="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-700 rounded-md leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#1e3a8a] focus:border-[#1e3a8a] sm:text-sm transition duration-150 ease-in-out"
+                                            placeholder="Keyword search..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <input
-                                type="text"
-                                className="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-700 rounded-lg leading-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#1e3a8a] focus:border-[#1e3a8a] sm:text-sm transition duration-150 ease-in-out shadow-sm"
-                                placeholder="Search by college name, code, branch or district..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
                         </div>
 
                         <div className="flex items-center space-x-2 pb-4">
@@ -243,8 +294,8 @@ const Results = () => {
                                     <ResultCard
                                         key={idx}
                                         college={college}
-                                        cutoff={mode === 'browse' ? null : formData.cutoff}
-                                        tier={college.tier ? `Tier ${college.tier}` : null}
+                                        cutoff={mode === 'browse' ? college.cutoff : formData.cutoff}
+                                        userData={formData}
                                     />
                                 ))
                             ) : (
@@ -255,10 +306,10 @@ const Results = () => {
                         </div>
                     </div>
                 )}
-            </div>
+            </main>
 
             <Footer />
-        </div>
+        </div >
     );
 };
 

@@ -72,7 +72,7 @@ const ChoiceFilling = () => {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
             <Navbar />
 
-            <div className="pt-24 pb-12 px-4 max-w-7xl mx-auto">
+            <main id="main-content" className="pt-24 pb-12 px-4 max-w-7xl mx-auto">
                 <HeaderSection />
 
                 {step === 1 && (
@@ -94,7 +94,7 @@ const ChoiceFilling = () => {
                         setStep={setStep}
                     />
                 )}
-            </div>
+            </main>
         </div>
     );
 };
@@ -102,7 +102,7 @@ const ChoiceFilling = () => {
 const HeaderSection = () => (
     <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full mb-4 text-purple-600 dark:text-purple-300">
-            <Brain className="w-8 h-8" />
+            <Brain className="w-8 h-8" aria-hidden="true" />
         </div>
         <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white font-serif mb-4">
             AI Choice Filter & Optimizer
@@ -122,30 +122,16 @@ const InputForm = ({ formData, setFormData, categories, branches, districts, han
         >
             <form onSubmit={handleGenerate} className="space-y-8">
                 <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">
                         1. Academic Details
-                    </h3>
-
-                    {/* Board Selection */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Board of Study</label>
-                        <select
-                            value={formData.board || 'State Board'}
-                            onChange={e => setFormData({ ...formData, board: e.target.value })}
-                            className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-purple-500 outline-none transition-all"
-                        >
-                            <option value="State Board">Tamil Nadu State Board</option>
-                            <option value="CBSE">CBSE / Central Board</option>
-                            <option value="ICSE">ICSE</option>
-                            <option value="Other">Other State Board</option>
-                        </select>
-                    </div>
+                    </h2>
 
                     {/* PCM Marks Inputs */}
                     <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Maths</label>
+                            <label htmlFor="maths-input" className="block text-xs font-bold text-slate-500 uppercase mb-1">Maths</label>
                             <input
+                                id="maths-input"
                                 type="number" min="0" max="100" required
                                 value={formData.maths || ''}
                                 onChange={e => {
@@ -159,8 +145,9 @@ const InputForm = ({ formData, setFormData, categories, branches, districts, han
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Physics</label>
+                            <label htmlFor="physics-input" className="block text-xs font-bold text-slate-500 uppercase mb-1">Physics</label>
                             <input
+                                id="physics-input"
                                 type="number" min="0" max="100" required
                                 value={formData.physics || ''}
                                 onChange={e => {
@@ -174,8 +161,9 @@ const InputForm = ({ formData, setFormData, categories, branches, districts, han
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Chemistry</label>
+                            <label htmlFor="chemistry-input" className="block text-xs font-bold text-slate-500 uppercase mb-1">Chemistry</label>
                             <input
+                                id="chemistry-input"
                                 type="number" min="0" max="100" required
                                 value={formData.chemistry || ''}
                                 onChange={e => {
@@ -193,9 +181,9 @@ const InputForm = ({ formData, setFormData, categories, branches, districts, han
                 </div>
 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">
                         2. Personal & Preferences
-                    </h3>
+                    </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Community */}
                         <div className="px-1">
@@ -209,10 +197,11 @@ const InputForm = ({ formData, setFormData, categories, branches, districts, han
 
                         {/* Annual Income */}
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Annual Family Income</label>
+                            <label htmlFor="income-input" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Annual Family Income</label>
                             <div className="relative">
-                                <span className="absolute left-3 top-3 text-slate-400">₹</span>
+                                <span className="absolute left-3 top-3 text-slate-400" aria-hidden="true">₹</span>
                                 <input
+                                    id="income-input"
                                     type="number"
                                     value={formData.income}
                                     onChange={e => setFormData({ ...formData, income: e.target.value })}
@@ -350,9 +339,12 @@ const ChoiceCard = ({ choice }) => {
                 <div className="p-5 flex-grow">
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                         <div>
-                            <div className="flex items-center space-x-2 mb-1">
+                            <div className="flex items-center flex-wrap gap-2 mb-1">
                                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${probColor}`}>
-                                    {choice.probability.label} Choice
+                                    {choice.probability.label}
+                                </span>
+                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700`}>
+                                    {choice.probability.percent}% Probability
                                 </span>
                                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                                     Tier {choice.tier}{choice.subTier}

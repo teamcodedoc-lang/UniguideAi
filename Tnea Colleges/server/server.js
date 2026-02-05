@@ -30,6 +30,9 @@ app.use('/api', apiRoutes);
 app.use('/api/scholarships', scholarshipRoutes);
 app.use('/api/choice-filling', choiceFillingRoutes);
 
+const alternatePathRoutes = require('./routes/alternatePathRoutes');
+app.use('/api/alternate-path', alternatePathRoutes);
+
 // Base route
 app.get('/', (req, res) => {
     res.send('TNEA College Predictor API is running');

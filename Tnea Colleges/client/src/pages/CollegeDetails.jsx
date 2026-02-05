@@ -9,45 +9,113 @@ const CollegeDetails = () => {
     // Simulate fetching data based on ID - in real app, fetch from backend
     const [college, setCollege] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [reviews, setReviews] = useState([]);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [reviewForm, setReviewForm] = useState({ user: '', rating: 5, comment: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        const fetchCollege = async () => {
+        const fetchCollegeAndReviews = async () => {
+            if (!id) return;
+
             try {
-                const response = await fetch(`http://localhost:5000/api/college/${id}`);
-                const data = await response.json();
+                // Fetch College
+                const collegeRes = await fetch(`http://127.0.0.1:5000/api/college/${id}`);
 
-                if (data) {
-                    // Enhance with mock placement data based on Tier
-                    const placementStats = getPlacementStats(data.tier);
+                if (!collegeRes.ok) {
+                    throw new Error(`College fetch failed: ${collegeRes.statusText}`);
+                }
 
-                    // Override with real data if available
-                    if (data.averagePackage) placementStats.average = data.averagePackage;
-                    if (data.highestPackage) placementStats.highest = data.highestPackage;
-                    if (data.placementDescription) placementStats.report = data.placementDescription;
+                const collegeData = await collegeRes.json();
+
+                if (collegeData && !collegeData.error) {
+                    const placementStats = getPlacementStats(collegeData.tier || '3');
+                    if (collegeData.averagePackage) placementStats.average = collegeData.averagePackage;
+                    if (collegeData.highestPackage) placementStats.highest = collegeData.highestPackage;
+                    if (collegeData.placementDescription) placementStats.report = collegeData.placementDescription;
+
+                    let branchesData = ["Computer Science", "ECE", "EEE", "Mechanical", "Civil"];
+                    if (collegeData.code) {
+                        try {
+                            // Fetch Available Branches
+                            const branchesRes = await fetch(`http://127.0.0.1:5000/api/college_branches/${collegeData.code}`);
+                            if (branchesRes.ok) {
+                                branchesData = await branchesRes.json();
+                            }
+                        } catch (e) {
+                            console.warn("Branch fetch failed", e);
+                        }
+                    }
 
                     setCollege({
-                        ...data,
-                        location: data.district || "Chennai, Tamil Nadu",
-                        description: generateDescription(data),
+                        ...collegeData,
+                        location: collegeData.district || "Chennai, Tamil Nadu",
+                        description: generateDescription(collegeData),
                         placement: placementStats,
-                        placementLink: data.placementLink, // Add link to state
-                        website: "www.annauniv.edu", // Placeholder as DB doesn't have it
-                        contact: "044 - 2235 8315",
-                        email: "enquiry@annauniv.edu",
-                        nirf: data.nirfRank !== 999 ? data.nirfRank : "Not Ranked",
-                        courses: ["Computer Science", "ECE", "EEE", "Mechanical", "Civil", "IT", "BioTech"],
-                        reviews: generateReviews(data)
+                        placementLink: collegeData.placementLink,
+                        website: collegeData.website || "www.annauniv.edu",
+                        contact: collegeData.phone || "044 - 2235 8315",
+                        email: collegeData.email || "enquiry@annauniv.edu",
+                        nirf: (collegeData.nirfRank && collegeData.nirfRank !== 999) ? collegeData.nirfRank : "Not Ranked",
+                        courses: Array.isArray(branchesData) && branchesData.length > 0 ? branchesData : ["Computer Science", "ECE", "EEE", "Mechanical", "Civil"],
                     });
+
+                    // Fetch Reviews
+                    if (collegeData.code) {
+                        try {
+                            const reviewsRes = await fetch(`http://127.0.0.1:5000/api/reviews/${collegeData.code}`);
+                            if (reviewsRes.ok) {
+                                const reviewsData = await reviewsRes.json();
+                                setReviews(reviewsData.length > 0 ? reviewsData : generateReviews(collegeData));
+                            } else {
+                                setReviews(generateReviews(collegeData));
+                            }
+                        } catch (e) {
+                            console.warn("Reviews fetch failed", e);
+                            setReviews(generateReviews(collegeData));
+                        }
+                    }
+                } else {
+                    setCollege(null);
                 }
             } catch (error) {
                 console.error("Failed to fetch college details", error);
+                setCollege(null);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchCollege();
+        fetchCollegeAndReviews();
     }, [id]);
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    collegeCode: id,
+                    ...reviewForm
+                })
+            });
+
+            if (response.ok) {
+                const newReview = await response.json();
+                setReviews([newReview, ...reviews]);
+                setIsReviewModalOpen(false);
+                setReviewForm({ user: '', rating: 5, comment: '' });
+                alert("Review submitted successfully!");
+            }
+        } catch (error) {
+            console.error("Failed to submit review", error);
+            alert("Error submitting review. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const generateDescription = (data) => {
         return `${data.name} is a premier institution located in ${data.district}. Designated as a Tier ${data.tier} college, it is known for its academic excellence in ${data.branch} and consistent performance in university examinations.`;
@@ -85,9 +153,9 @@ const CollegeDetails = () => {
     };
 
     const generateReviews = (data) => [
-        { user: "Student A", rating: 4, comment: `Good infrastructure and lab facilities in ${data.district}.` },
-        { user: "Student B", rating: 5, comment: "Faculty members are helpful. Placements are good for CSE/IT." },
-        { user: "Student C", rating: 3, comment: "Strict rules but good for academics." }
+        { user: "Student A", rating: 4, comment: `Good infrastructure and lab facilities in ${data.district}.`, date: new Date() },
+        { user: "Student B", rating: 5, comment: "Faculty members are helpful. Placements are good for CSE/IT.", date: new Date() },
+        { user: "Student C", rating: 3, comment: "Strict rules but good for academics.", date: new Date() }
     ];
 
     if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -113,16 +181,24 @@ const CollegeDetails = () => {
                             <h1 className="text-3xl md:text-5xl font-bold font-serif mb-4 leading-tight">
                                 {college.name}
                             </h1>
-                            <div className="flex items-center text-blue-200 text-sm md:text-base">
-                                <MapPin className="w-5 h-5 mr-2" />
-                                {college.location}
+                            <div className="flex flex-wrap gap-4 items-center text-blue-200 text-sm md:text-base">
+                                <div className="flex items-center">
+                                    <MapPin className="w-5 h-5 mr-2" />
+                                    {college.location}
+                                </div>
+                                {college.branch && (
+                                    <div className="flex items-center">
+                                        <BookOpen className="w-5 h-5 mr-2 text-blue-300" />
+                                        {college.branch}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm border border-white/20 min-w-[200px] text-center">
                             <p className="text-sm text-blue-200 uppercase tracking-widest font-semibold mb-1">Expect Cutoff</p>
                             <p className="text-4xl font-bold font-serif">{college.cutoff}</p>
-                            <p className="text-xs text-blue-300 mt-2">OC Category (2024)</p>
+                            <p className="text-xs text-blue-300 mt-2">{college.category || 'OC'} Category (2024)</p>
                         </div>
                     </div>
                 </div>
@@ -211,39 +287,109 @@ const CollegeDetails = () => {
                             </div>
                         </section>
 
-                        {/* Reviews Section - Requested Feature */}
+                        {/* Reviews Section - Implementation */}
                         <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-8 shadow-sm">
                             <div className="flex items-center justify-between mb-8">
                                 <h2 className="text-2xl font-bold font-serif text-[#1e3a8a] dark:text-white">Student Reviews</h2>
-                                <button className="text-blue-600 font-medium hover:underline text-sm">Write a Review</button>
+                                <button
+                                    onClick={() => setIsReviewModalOpen(true)}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                                >
+                                    Write a Review
+                                </button>
                             </div>
 
                             <div className="space-y-6">
-                                {college.reviews.map((review, i) => (
+                                {reviews.map((review, i) => (
                                     <div key={i} className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0 last:pb-0">
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center space-x-3">
-                                                <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold">
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
                                                     {review.user[0]}
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-slate-900 dark:text-white text-sm">{review.user}</p>
-                                                    <p className="text-xs text-slate-500">Engineering Student</p>
+                                                    <p className="text-xs text-slate-500">
+                                                        {review.date ? new Date(review.date).toLocaleDateString() : 'Engineering Student'}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center bg-green-50 text-green-700 px-2 py-1 rounded text-xs font-bold">
+                                            <div className="flex items-center bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-1 rounded text-xs font-bold border border-amber-100 dark:border-amber-900/30">
                                                 <Star className="w-3 h-3 fill-current mr-1" />
                                                 {review.rating}.0
                                             </div>
                                         </div>
-                                        <p className="text-slate-600 dark:text-slate-300 text-sm italic">
-                                            "{review.comment}"
+                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                                            {review.comment}
                                         </p>
                                     </div>
                                 ))}
                             </div>
                         </section>
                     </div>
+
+                    {/* Review Modal */}
+                    {isReviewModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+                                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Submit your review</h3>
+                                    <button
+                                        onClick={() => setIsReviewModalOpen(false)}
+                                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                                <form onSubmit={handleReviewSubmit} className="p-6 space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Your Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={reviewForm.user}
+                                            onChange={(e) => setReviewForm({ ...reviewForm, user: e.target.value })}
+                                            className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                            placeholder="Enter your name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Rating</label>
+                                        <div className="flex space-x-2">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                                                    className={`p-1 transition-colors ${reviewForm.rating >= star ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
+                                                >
+                                                    <Star className={`w-8 h-8 ${reviewForm.rating >= star ? 'fill-current' : ''}`} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Your Experience</label>
+                                        <textarea
+                                            required
+                                            value={reviewForm.comment}
+                                            onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                                            rows="4"
+                                            className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                                            placeholder="Write your review here..."
+                                        ></textarea>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className={`w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    >
+                                        {isSubmitting ? 'Submitting...' : 'Post Review'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Right Sidebar: Quick Details */}
                     <aside className="space-y-6">

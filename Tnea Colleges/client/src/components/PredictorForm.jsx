@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Calculator, ArrowRight, Loader2 } from 'lucide-react';
+import { Calculator, ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
 import CustomDropdown from './CustomDropdown';
 
 const PredictorForm = () => {
@@ -11,7 +11,15 @@ const PredictorForm = () => {
         cutoff: '',
         category: 'OC',
         preferredBranch: 'All Branches',
-        district: 'All Districts'
+        district: 'All Districts',
+        gender: 'Male',
+        isGovtSchool: false,
+        incomeCategory: 'Medium',
+        isPwD: false,
+        disabilityCategory: 'Locomotor Disability',
+        disabilityPercentage: '',
+        hasMedicalCertificate: true,
+        requireAssistiveSupport: false
     });
 
     const [categories, setCategories] = useState(['OC', 'BC', 'BCM', 'MBC', 'DNC', 'SC', 'SCA', 'ST']);
@@ -59,13 +67,15 @@ const PredictorForm = () => {
 
             const payload = { ...formData, cutoff: calculatedCutoff };
 
+            console.log("[PredictorForm] Submitting Payload:", payload);
+
             // Simulate API logic or actual call if backend is ready
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // Pass calculated payload
             navigate('/results', { state: payload });
-        } catch (error) {
-            console.error("Prediction Error", error);
+        } catch (err) {
+            console.error("Prediction Error", err);
         } finally {
             setLoading(false);
         }
@@ -90,15 +100,26 @@ const PredictorForm = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Screen Reader Instructions - Visually Hidden */}
+                            <div className="sr-only" role="note" tabIndex="0">
+                                To enter your cutoff marks, please provide your marks out of 100 for Math, Physics, and Chemistry.
+                                The system will automatically calculate your aggregate cutoff.
+                                For Community selection, choose your category from the list.
+                                If you are a differently abled student, check the PwD box to access specific reservation inputs.
+                            </div>
+
                             {/* PCM Inputs - Replaces Single Cutoff */}
                             <div className="space-y-4 md:col-span-2">
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300" id="marks-label">
                                     Academic Marks (Out of 100)
                                 </label>
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-3 gap-4" role="group" aria-labelledby="marks-label">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-slate-500 uppercase">Maths</label>
+                                        <label htmlFor="maths" className="text-xs font-medium text-slate-500 uppercase">Maths</label>
                                         <input
+                                            id="maths"
+                                            name="maths"
+                                            aria-label="Enter Maths Mark out of 100"
                                             type="number"
                                             min="0"
                                             max="100"
@@ -115,8 +136,11 @@ const PredictorForm = () => {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-slate-500 uppercase">Physics</label>
+                                        <label htmlFor="physics" className="text-xs font-medium text-slate-500 uppercase">Physics</label>
                                         <input
+                                            id="physics"
+                                            name="physics"
+                                            aria-label="Enter Physics Mark out of 100"
                                             type="number"
                                             min="0"
                                             max="100"
@@ -133,8 +157,11 @@ const PredictorForm = () => {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-slate-500 uppercase">Chemistry</label>
+                                        <label htmlFor="chemistry" className="text-xs font-medium text-slate-500 uppercase">Chemistry</label>
                                         <input
+                                            id="chemistry"
+                                            name="chemistry"
+                                            aria-label="Enter Chemistry Mark out of 100"
                                             type="number"
                                             min="0"
                                             max="100"
@@ -151,7 +178,7 @@ const PredictorForm = () => {
                                         />
                                     </div>
                                 </div>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-slate-500" aria-live="polite">
                                     *Enter marks out of 100. Cutoff will be calculated as: Maths + (Physics/2) + (Chemistry/2).
                                 </p>
                             </div>
@@ -179,6 +206,94 @@ const PredictorForm = () => {
                                 options={districts}
                                 onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                             />
+
+                            {/* Additional AI Parameters */}
+                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <CustomDropdown
+                                    label="Gender"
+                                    value={formData.gender}
+                                    options={['Male', 'Female', 'Other']}
+                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                />
+                                <CustomDropdown
+                                    label="Annual Income Category"
+                                    value={formData.incomeCategory}
+                                    options={['Low (<2.5L)', 'Medium (2.5-8L)', 'High (>8L)']}
+                                    onChange={(e) => setFormData({ ...formData, incomeCategory: e.target.value })}
+                                />
+                                <div className="flex flex-col justify-center">
+                                    <label className="flex items-center space-x-3 p-3 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
+                                        <input
+                                            type="checkbox"
+                                            className="w-5 h-5 text-[#1e3a8a] rounded"
+                                            checked={formData.isGovtSchool}
+                                            onChange={(e) => setFormData({ ...formData, isGovtSchool: e.target.checked })}
+                                        />
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">7.5% Govt School Quota</span>
+                                    </label>
+                                </div>
+                                <div className="flex flex-col justify-center">
+                                    <label className="flex items-center space-x-3 p-3 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
+                                        <input
+                                            type="checkbox"
+                                            className="w-5 h-5 text-indigo-600 rounded"
+                                            checked={formData.isPwD}
+                                            onChange={(e) => setFormData({ ...formData, isPwD: e.target.checked })}
+                                        />
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Differently Abled (PwD)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* PwD Profile Section (Conditional) */}
+                            {formData.isPwD && (
+                                <div className="md:col-span-2 space-y-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                                        <h4 className="font-bold text-slate-900 dark:text-white">PwD Reservation Profile</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <CustomDropdown
+                                            label="Disability Category"
+                                            value={formData.disabilityCategory}
+                                            options={['Locomotor Disability', 'Visual Impairment', 'Hearing Impairment', 'Speech and Language Disability', 'Intellectual Disability']}
+                                            onChange={(e) => setFormData({ ...formData, disabilityCategory: e.target.value })}
+                                        />
+                                        <div className="space-y-1">
+                                            <label htmlFor="disability-percentage" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Disability Percentage</label>
+                                            <input
+                                                id="disability-percentage"
+                                                type="number"
+                                                placeholder="e.g. 45"
+                                                className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
+                                                value={formData.disabilityPercentage}
+                                                onChange={(e) => setFormData({ ...formData, disabilityPercentage: e.target.value })}
+                                            />
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold">*Min 40% required for reservation</p>
+                                        </div>
+                                        <div className="flex items-center space-x-3">
+                                            <input
+                                                type="checkbox"
+                                                id="cert"
+                                                checked={formData.hasMedicalCertificate}
+                                                onChange={(e) => setFormData({ ...formData, hasMedicalCertificate: e.target.checked })}
+                                                className="w-4 h-4 text-indigo-600 rounded"
+                                            />
+                                            <label htmlFor="cert" className="text-sm font-medium text-slate-700 dark:text-slate-300">Medical Certificate Available</label>
+                                        </div>
+                                        <div className="flex items-center space-x-3">
+                                            <input
+                                                type="checkbox"
+                                                id="assist"
+                                                checked={formData.requireAssistiveSupport}
+                                                onChange={(e) => setFormData({ ...formData, requireAssistiveSupport: e.target.checked })}
+                                                className="w-4 h-4 text-indigo-600 rounded"
+                                            />
+                                            <label htmlFor="assist" className="text-sm font-medium text-slate-700 dark:text-slate-300">Require Assistive Support</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="pt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">

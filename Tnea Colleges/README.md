@@ -1,17 +1,48 @@
-# UniGuide Ai - TNEA College Predictor & Academic Guide
+# UniGuide Ai - Comprehensive Engineering Admissions Assistant
 
-UniGuide Ai is a comprehensive web application designed to empower students in Tamil Nadu to make informed decisions about their engineering education. It leverages historical TNEA (Tamil Nadu Engineering Admissions) cutoff trends and data analysis to predict college eligibility and provide detailed insights into various institutions.
+UniGuide Ai is an advanced academic guidance platform designed mainly for students in Tamil Nadu navigating the TNEA (Tamil Nadu Engineering Admissions) process. Going beyond simple cutoff prediction, it offers a suite of intelligent tools to help students find scholarships, optimize their choice filling, and even discover alternate career pathways if they miss their dream branch.
 
 ![UniGuide Ai Banner](client/src/assets/logo_icon.png)
 
 ## 🚀 Key Features
 
-*   **College Predictor Tool:** Accurately predicts eligible colleges based on your calculated engineering cutoff (out of 200), community category, preferred branch, and district.
-*   **Tier-Based Classification:** Explore colleges categorized into Tiers (1 to 5) based on performance, placements, and infrastructure, helping students target the best institutions.
-*   **Detailed College Profiles:** View in-depth details for each college, including courses offered, location, and past cutoff history.
-*   **Interactive UI:** A modern, responsive, and visually appealing user interface built with React and Tailwind CSS, featuring smooth animations and a premium design.
-*   **Secure Authentication:** Google Sign-In integration via Firebase for personalized user experiences.
-*   **Search & Filtering:** Robust search functionality to find specific colleges or filter by district and branch.
+### 1. 🎓 TNEA College Predictor
+*   **Precision Prediction:** Calculates your engineering cutoff (out of 200) and predicts eligible colleges based on community reservation (OC, BC, MBC, etc.).
+*   **Tier-Based Filtering:** View results categorized by standard Tiers (Tier 1 to Tier 5) to identify top-performing institutions quickly.
+*   **Branch-Specific Insights:** Filter predictions by specific engineering branches (CSE, ECE, Mech, etc.).
+
+### 7. ♿ Inclusivity & Accessibility Support
+*   **PwD Quota Logic:** The predictor automatically adjusts cutoff eligibility for **Differently Abled (PwD)** candidates (with >40% disability), applying a **relaxment buffer** to show eligible top-tier colleges that might otherwise be hidden.
+*   **Campus Accessibility Insights:** Each college profile displays critical accessibility data, including **Wheelchair Access**, **Hostel Support**, and **Medical Facilities Availability**.
+*   **Smart Accessibility Widget:** Built-in assistive tools for visual and motor impairments:
+    *   🗣️ **Screen Reader:** Reads page content aloud.
+    *   🎙️ **Voice Commands:** Navigate the site using voice.
+    *   👁️ **High Contrast & Font Sizing:** Adjustable UI for better readability.
+
+### 2. 🔀 Alternate Path Predictor (New!)
+*   **Career Recovery Engine:** A dedicated module for students who might miss their "dream branch" cutoff.
+*   **Goal-Based Analysis:** Input a career goal (e.g., "Software Developer", "Cyber Security Expert") instead of just a branch.
+*   **Smart Mapping:** Suggests alternate engineering branches that lead to the same career outcome (e.g., taking IT or ECE to become a Software Engineer).
+*   **Skill Roadmaps:** Provides a year-by-year learning path and certification recommendations to bridge the gap between an alternate branch and the dream career.
+
+### 3. 🤖 AI Choice Filler
+*   **Optimized Preference Lists:** Helps students generate a smart choice-filling list for the TNEA counselling portal.
+*   **Mark-Based Logic:** Suggests an ordered list of colleges and branches that maximizes the probability of allotment.
+
+### 4. 💰 Scholarship Finder
+*   **Financial Aid Database:** A searchable directory of government and private scholarships available for engineering students.
+*   **Eligibility Matching:** Helps students identify scholarships they qualify for based on their profile.
+
+### 5. 🏛️ Comprehensive College Database
+*   **Detailed Profiles:** In-depth information about college infrastructure, courses offered, and location.
+*   **Tier Classification:** Colleges are rigorously classified into Tiers (1, 2, 3...) based on placement records and academic performance.
+
+### 6. ✨ Premium User Experience
+*   **Modern UI:** Built with **React 19** and **Tailwind CSS v4**, featuring glassmorphism effects and smooth Framer Motion animations.
+*   **Dark Mode:** Fully supported system-wide dark mode.
+*   **Secure Auth:** Google Sign-In integration via Firebase.
+
+---
 
 ## 🛠️ Technology Stack
 
@@ -28,7 +59,9 @@ UniGuide Ai is a comprehensive web application designed to empower students in T
 *   **Runtime:** [Node.js](https://nodejs.org/)
 *   **Framework:** [Express.js](https://expressjs.com/)
 *   **Database:** [MongoDB](https://www.mongodb.com/) (Mongoose ODM)
-*   **Data Processing:** `xlsx` library for processing college data spreadsheets.
+*   **Data Processing:** `xlsx` library for processing high-volume TNEA data sheets.
+
+---
 
 ## 📂 Project Structure
 
@@ -36,97 +69,62 @@ UniGuide Ai is a comprehensive web application designed to empower students in T
 UniGuide-Ai/
 ├── client/                 # Frontend React Application
 │   ├── src/
-│   │   ├── components/     # Reusable UI Components (Navbar, PredictorForm, etc.)
-│   │   ├── context/        # React Context (AuthContext)
-│   │   ├── pages/          # Application Pages (Home, Login, Results, etc.)
-│   │   ├── assets/         # Images and Static Assets
-│   │   └── firebase.js     # Firebase Configuration
-│   └── ...
-├── server/                 # Backend Node.js/Express Application
-│   ├── models/             # Mongoose Database Schemas
-│   ├── routes/             # API Routes
-│   ├── scripts/            # Data Import Scripts
-│   ├── server.js           # Server Entry Point
-│   └── ...
-└── README.md               # Project Documentation
+│   │   ├── components/     # Navbar, AccessibilityWidget, etc.
+│   │   ├── context/        # Auth & Accessibility Contexts
+│   │   ├── pages/          # Home, Results, AlternatePathPredictor, etc.
+│   │   ├── assets/         # Static assets
+│   │   └── firebase.js     # Firebase Config
+├── server/                 # Backend Node.js Application
+│   ├── models/             # Mongoose Schemas (College, CareerMapping, etc.)
+│   ├── routes/             # API Endpoints
+│   ├── scripts/            # Data Seeding & Import Scripts
+│   └── server.js           # Entry Point
+└── README.md               # Documentation
 ```
+
+---
 
 ## ⚙️ Installation & Setup
 
 ### Prerequisites
-*   [Node.js](https://nodejs.org/) (v14 or higher)
-*   [MongoDB](https://www.mongodb.com/try/download/community) (Local or Atlas) installed and running.
+*   [Node.js](https://nodejs.org/) (v16 or higher)
+*   [MongoDB](https://www.mongodb.com/try/download/community) installed and running locally on port `27017`.
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd "UniGuide Ai/Tnea Colleges"
-```
-
-### 2. Backend Setup
-Navigate to the server directory and install dependencies:
+### 1. Backend Setup
 ```bash
 cd server
 npm install
-```
-*   **Import Data:** If this is your first time running the app, you may need to import the college data from the Excel files into your MongoDB database. Run the import script (if available in `package.json` scripts) or start the server which might handle initialization.
-
-### 3. Frontend Setup
-Navigate to the client directory and install dependencies:
-```bash
-cd ../client
-npm install
-```
-
-### 4. Configuration
-*   **Environment Variables:**
-    *   **Frontend:** Ensure your `firebase.js` in `client/src/` has the correct Firebase project configuration.
-    *   **Backend:** Ensure your `server.js` or `.env` file points to the correct MongoDB URI (default is usually `mongodb://localhost:27017/tnea_colleges`).
-
-## 🚀 Running the Application
-
-### Option 1: Manual Start (Two Terminals)
-
-**Terminal 1 (Backend):**
-```bash
-cd server
+# Seed the Alternate Path Database (Required for first run)
+node scripts/seedAlternatePaths.js
+# Start the Server
 npm start
-# or for development with auto-restart:
-npm run dev
 ```
-The server typically runs on `http://localhost:5000`.
+*Server runs on `http://localhost:5000`*
 
-**Terminal 2 (Frontend):**
+### 2. Frontend Setup
 ```bash
 cd client
+npm install
+# Start the Development Server
 npm run dev
 ```
-The client typically runs on `http://localhost:5173`.
+*Client runs on `http://localhost:5173`*
 
-### Option 2: Automatic Start
-Use the provided batch script in the root directory:
+### 3. Quick Start (Windows)
+Simply run the provided batch script in the root directory:
 ```bash
 ./start_app.cmd
 ```
 
-## 📊 Data Sources
+---
 
-The application uses a comprehensive dataset of Tamil Nadu engineering colleges sourced from official TNEA reports, classified into tiers:
-*   **Tier 1:** Top-performing institutions (IITs, CEG, MIT, SSN, etc.)
-*   **Tier 2:** High-quality established colleges
-*   **Tiers 3-5:** Other engineering institutions across the state.
+## 📊 Data & Accuracy
+The application relies on processed historical data from TNEA 2023-2024 reports. While the predictor uses statistical probability based on previous years' cutoffs, actual admission results may vary due to changing demand and seat availability.
 
 ## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+Contributions are welcome! Please fork the repository and submit a pull request.
 
 ## 📄 License
-
 This project is open-source and available under the [MIT License](LICENSE).
 
 ---

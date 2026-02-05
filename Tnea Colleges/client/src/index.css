@@ -1,6 +1,5 @@
-@import "tailwindcss";
-
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
 @theme {
   --color-primary: #1e3a8a;
@@ -25,11 +24,39 @@
   html {
     scroll-behavior: smooth;
   }
+
   body {
     @apply bg-white text-slate-800 transition-colors duration-300;
     @apply dark:bg-slate-950 dark:text-slate-200;
     font-family: var(--font-sans);
     overflow-x: hidden;
+  }
+
+  /* Accessibility High Contrast Overrides */
+  .high-contrast {
+    filter: contrast(125%);
+  }
+
+  .high-contrast body,
+  .high-contrast .academic-card,
+  .high-contrast nav,
+  .high-contrast footer {
+    background-color: #000 !important;
+    color: #ffd700 !important;
+  }
+
+  .high-contrast a,
+  .high-contrast button {
+    color: #00ffff !important;
+    border-color: #ffffff !important;
+    font-weight: 800 !important;
+  }
+
+  .high-contrast .bg-indigo-600,
+  .high-contrast .bg-slate-50,
+  .high-contrast .bg-slate-900 {
+    background-color: #222 !important;
+    border: 2px solid #fff !important;
   }
 
   h1,

@@ -100,6 +100,24 @@ const importData = async () => {
             // Batch insert for performance
             await College.insertMany(colleges);
             console.log(`Successfully imported ${colleges.length} records.`);
+
+            // Chain Placement and Scholarship Imports
+            console.log('\n--- Running Supplemental Imports ---');
+            try {
+                const { importPlacementData } = require('./import_placement_data_logic');
+                await importPlacementData();
+                console.log('[OK] Placement data updated.');
+            } catch (err) {
+                console.error('[Error] Placement import failed:', err.message);
+            }
+
+            try {
+                const { importScholarships } = require('./importScholarshipsLogic');
+                await importScholarships();
+                console.log('[OK] Scholarships updated.');
+            } catch (err) {
+                console.error('[Error] Scholarships import failed:', err.message);
+            }
         } else {
             console.log('No valid data found to import.');
         }
