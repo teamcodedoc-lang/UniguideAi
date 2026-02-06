@@ -2,7 +2,6 @@
 
 UniGuide Ai is an advanced academic guidance platform designed mainly for students in Tamil Nadu navigating the TNEA (Tamil Nadu Engineering Admissions) process. Going beyond simple cutoff prediction, it offers a suite of intelligent tools to help students find scholarships, optimize their choice filling, and even discover alternate career pathways if they miss their dream branch.
 
-![UniGuide Ai Banner](client/src/assets/logo_icon.png)
 
 ## 🚀 Key Features
 
