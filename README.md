@@ -10,13 +10,6 @@ UniGuide Ai is an advanced academic guidance platform designed mainly for studen
 *   **Tier-Based Filtering:** View results categorized by standard Tiers (Tier 1 to Tier 5) to identify top-performing institutions quickly.
 *   **Branch-Specific Insights:** Filter predictions by specific engineering branches (CSE, ECE, Mech, etc.).
 
-### 7. ♿ Inclusivity & Accessibility Support
-*   **PwD Quota Logic:** The predictor automatically adjusts cutoff eligibility for **Differently Abled (PwD)** candidates (with >40% disability), applying a **relaxment buffer** to show eligible top-tier colleges that might otherwise be hidden.
-*   **Campus Accessibility Insights:** Each college profile displays critical accessibility data, including **Wheelchair Access**, **Hostel Support**, and **Medical Facilities Availability**.
-*   **Smart Accessibility Widget:** Built-in assistive tools for visual and motor impairments:
-    *   🗣️ **Screen Reader:** Reads page content aloud.
-    *   🎙️ **Voice Commands:** Navigate the site using voice.
-    *   👁️ **High Contrast & Font Sizing:** Adjustable UI for better readability.
 
 ### 2. 🔀 Alternate Path Predictor (New!)
 *   **Career Recovery Engine:** A dedicated module for students who might miss their "dream branch" cutoff.
@@ -40,6 +33,15 @@ UniGuide Ai is an advanced academic guidance platform designed mainly for studen
 *   **Modern UI:** Built with **React 19** and **Tailwind CSS v4**, featuring glassmorphism effects and smooth Framer Motion animations.
 *   **Dark Mode:** Fully supported system-wide dark mode.
 *   **Secure Auth:** Google Sign-In integration via Firebase.
+
+
+### 7. ♿ Inclusivity & Accessibility Support
+*   **PwD Quota Logic:** The predictor automatically adjusts cutoff eligibility for **Differently Abled (PwD)** candidates (with >40% disability), applying a **relaxment buffer** to show eligible top-tier colleges that might otherwise be hidden.
+*   **Campus Accessibility Insights:** Each college profile displays critical accessibility data, including **Wheelchair Access**, **Hostel Support**, and **Medical Facilities Availability**.
+*   **Smart Accessibility Widget:** Built-in assistive tools for visual and motor impairments:
+    *   🗣️ **Screen Reader:** Reads page content aloud.
+    *   🎙️ **Voice Commands:** Navigate the site using voice.
+    *   👁️ **High Contrast & Font Sizing:** Adjustable UI for better readability.
 
 ---
 
@@ -80,42 +82,6 @@ UniGuide-Ai/
 │   └── server.js           # Entry Point
 └── README.md               # Documentation
 ```
-
----
-
-## ⚙️ Installation & Setup
-
-### Prerequisites
-*   [Node.js](https://nodejs.org/) (v16 or higher)
-*   [MongoDB](https://www.mongodb.com/try/download/community) installed and running locally on port `27017`.
-
-### 1. Backend Setup
-```bash
-cd server
-npm install
-# Seed the Alternate Path Database (Required for first run)
-node scripts/seedAlternatePaths.js
-# Start the Server
-npm start
-```
-*Server runs on `http://localhost:5000`*
-
-### 2. Frontend Setup
-```bash
-cd client
-npm install
-# Start the Development Server
-npm run dev
-```
-*Client runs on `http://localhost:5173`*
-
-### 3. Quick Start (Windows)
-Simply run the provided batch script in the root directory:
-```bash
-./start_app.cmd
-```
-
----
 
 ## 📊 Data & Accuracy
 The application relies on processed historical data from TNEA 2023-2024 reports. While the predictor uses statistical probability based on previous years' cutoffs, actual admission results may vary due to changing demand and seat availability.
